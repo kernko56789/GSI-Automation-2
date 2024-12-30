@@ -46,16 +46,14 @@ jobs:
 
     - name: Install repo tool
       run: |
+        mkdir -p ~/bin
         curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
         chmod a+x ~/bin/repo
+        echo "PATH=~/bin:\$PATH" >> ~/.bashrc
         export PATH=~/bin:$PATH
 
-    - name: Set execute permissions for sync script
-      run: chmod +x sync_lineage.sh
-
-    - name: Sync LineageOS and integrate Magisk
-      run: |
-        bash sync_lineage.sh
+    - name: Sync LineageOS source code
+      run: bash ./sync_lineage.sh
 
     - name: Build LineageOS GSI
       run: |
@@ -66,5 +64,5 @@ jobs:
     - name: Upload GSI
       uses: actions/upload-artifact@v3
       with:
-        name: LineageOS-GSI-with-Magisk
+        name: LineageOS-GSI
         path: out/target/product/generic_arm64/system.img
