@@ -1,0 +1,47 @@
+name: Build LineageOS GSI with Magisk
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y openjdk-11-jdk git ccache python3 unzip bc bison g++-multilib gcc-multilib flex gperf libncurses5-dev libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev simg2img
+
+    - name: Sync LineageOS source code
+      run: |
+        bash sync_lineage.sh
+
+    - name: Add Magisk to GSI
+      run: |
+        # 复制 magiskinit 文件到 GSI 的 root 目录
+        cp magisk/magiskinit device/generic/gsi/root/
+        mkdir -p device/generic/gsi/system/priv-app/MagiskManager
+        cp magisk/Magisk.apk device/generic/gsi/system/priv-app/MagiskManager/MagiskManager.apk
+
+        # 修改启动脚本，确保 Magisk 被初始化
+        echo 'service magisk /system/bin/magiskinit' >> device/generic/gsi/root/init.rc
+        echo '    class main' >> device/generic/gsi/root/init.rc
+        echo '    user root' >> device/generic/gsi/root/init.rc
+
+    - name: Build LineageOS GSI
+      run: |
+        source build/envsetup.sh
+        lunch treble_arm64_bvS-userdebug
+        make -j$(nproc) systemimage
+
+    - name: Upload GSI
+      uses: actions/upload-artifact@v3
+      with:
+        name: LineageOS-GSI-with-Magisk
+        path: out/target/product/generic_arm64/system.img
