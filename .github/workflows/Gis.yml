@@ -20,9 +20,8 @@ jobs:
         sudo apt-get install -y \
           openjdk-11-jdk \
           git \
-          ccache \
-          python3 \
           curl \
+          python3 \
           unzip \
           bc \
           bison \
@@ -54,18 +53,9 @@ jobs:
     - name: Set execute permissions for sync script
       run: chmod +x sync_lineage.sh
 
-    - name: Sync LineageOS source code
+    - name: Sync LineageOS and integrate Magisk
       run: |
         bash sync_lineage.sh
-
-    - name: Add Magisk to GSI
-      run: |
-        cp magisk/magiskinit device/generic/gsi/root/
-        mkdir -p device/generic/gsi/system/priv-app/MagiskManager
-        cp magisk/Magisk.apk device/generic/gsi/system/priv-app/MagiskManager/MagiskManager.apk
-        echo 'service magisk /system/bin/magiskinit' >> device/generic/gsi/root/init.rc
-        echo '    class main' >> device/generic/gsi/root/init.rc
-        echo '    user root' >> device/generic/gsi/root/init.rc
 
     - name: Build LineageOS GSI
       run: |
