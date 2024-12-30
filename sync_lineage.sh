@@ -1,4 +1,7 @@
 #!/bin/bash
+# 确保路径正确
+export PATH=~/bin:$PATH
+
 # 启用错误处理和调试输出
 set -e
 set -x
